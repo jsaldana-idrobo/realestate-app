@@ -64,6 +64,60 @@ Las principales variables ya están definidas en `docker-compose.yml`:
 
 ---
 
+## ✅ Features Implementados
+
+- **Backend (.NET 8, C#)**
+
+  - API REST con endpoints para listar propiedades.
+  - Filtros: nombre, dirección y rango de precios.
+  - DTO con: `IdOwner`, `Name`, `AddressProperty`, `PriceProperty`, `Image`.
+  - Conexión con MongoDB y seeding inicial.
+
+- **Frontend (Next.js)**
+
+  - Listado de propiedades consumiendo la API.
+  - Filtros dinámicos (nombre, dirección, rango de precios).
+  - Vista de detalle de propiedad.
+  - Responsive design.
+
+- **Infraestructura**
+  - Proyecto orquestado con Docker Compose (API, Web, Mongo).
+  - Variables de entorno centralizadas.
+  - Scripts de arranque rápido.
+
+---
+
+## 🧪 Testing
+
+### Backend (NUnit)
+
+Desde la carpeta `apps/api`:
+
+```bash
+dotnet test
+```
+
+### Frontend (Jest + React Testing Library)
+
+Desde la carpeta `apps/web`:
+
+```bash
+npm test
+```
+
+---
+
+## 🏗️ Arquitectura y buenas prácticas
+
+- **Clean Architecture**: separación clara de capas en API y frontend.
+- **Error Handling**: respuestas estandarizadas en la API.
+- **Optimización**:
+  - Índices en MongoDB para búsquedas rápidas.
+  - Hooks y componentes optimizados en frontend.
+- **Código limpio**: tipado estricto (C#, TypeScript), nombres claros, sin lógica duplicada.
+
+---
+
 ## 🛑 Apagar los contenedores
 
 ```bash
@@ -71,14 +125,6 @@ npm run dev:down
 ```
 
 _(Alias para `docker compose -f docker/compose/docker-compose.yml down`)_
-
----
-
-## 📖 Notas útiles
-
-- La API se inicia con `SEED_ON_START=true`, lo que carga datos iniciales en la base de datos.
-- Puedes modificar los orígenes permitidos en la API con la variable `ALLOWED_ORIGINS`.
-- Next.js reescribe automáticamente las llamadas a `/api/*` hacia el servicio `api` en Docker.
 
 ---
 
