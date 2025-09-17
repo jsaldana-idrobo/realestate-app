@@ -108,6 +108,12 @@ npm install
 npm test
 ```
 
+Si quieres correr los test 2e2:
+
+```bash
+npm run e2e
+```
+
 ---
 
 ## 🏗️ Arquitectura y buenas prácticas
