@@ -1,52 +1,91 @@
-# RealEstate Monorepo
+# RealEstate App 🏡
 
-Monorepo de ejemplo para la prueba técnica (API .NET + MongoDB + placeholder Next.js).  
-Este repo está listo para levantarse con **Docker Compose** y ya incluye un **seed** con propiedades de ejemplo.
+Proyecto de ejemplo con **API (.NET Core)**, **Web (Next.js)** y **MongoDB**, todo orquestado con **Docker Compose**.
 
-## Estructura
+---
+
+## 🚀 Requisitos
+
+- [Docker](https://docs.docker.com/get-docker/)
+- [Docker Compose](https://docs.docker.com/compose/)
+
+---
+
+## 📦 Estructura del proyecto
+
 ```
-/
-├─ apps/
-│  ├─ api/                 # .NET 9 Web API + MongoDB
-│  └─ web/                 # Placeholder Next.js (siguiente paso)
-├─ docker/
-│  └─ compose/
-│     └─ docker-compose.yml
-├─ packages/
-│  └─ contracts/           # DTOs compartidos (TS) - opcional, placeholder
-└─ README.md
+.
+├── apps/
+│   ├── api/   # Backend en .NET Core
+│   └── web/   # Frontend en Next.js
+├── docker/
+│   └── compose/docker-compose.yml
+└── README.md
 ```
 
-## Requisitos
-- Docker y Docker Compose
+---
 
-## Arranque rápido
+## ▶️ Arranque rápido
+
+Clona el repo y entra en la carpeta:
+
 ```bash
-# desde la raíz
-docker compose -f docker/compose/docker-compose.yml up --build -d
-# API disponible en: http://localhost:8080 (Swagger en /swagger)
-# Mongo en: mongodb://localhost:27017
+git clone https://github.com/TU-USUARIO/realestate-app.git
+cd realestate-app
 ```
 
-> La API crea índices y hace **seed automático** al arrancar (solo si `SEED_ON_START=true`).
+Levanta todo con un solo comando:
 
-## Variables de entorno (API)
-- `MONGODB_URI` (por defecto: `mongodb://mongo:27017` en docker)
-- `MONGODB_DB` (por defecto: `realestate`)
-- `MONGODB_COLLECTION_PROPERTIES` (por defecto: `properties`)
-- `SEED_ON_START` (true|false, por defecto: true en compose dev)
-
-## Endpoints principales
-- `GET /health` → healthcheck
-- `GET /api/v1/properties` → listado con filtros y paginación
-- `GET /api/v1/properties/{id}` → detalle
-
-### Ejemplos
-```
-GET /api/v1/properties?name=park&minPrice=150000&maxPrice=800000&page=1&pageSize=10&sortBy=price&sortDir=asc
+```bash
+npm run dev:up
 ```
 
-## Próximos pasos
-1. Añadir la app de **Next.js** en `apps/web` (con filtros y SSR).
-2. Crear CI (lint + tests).
-3. Documentación extra en `/docs`.
+*(Este script ejecuta `docker compose -f docker/compose/docker-compose.yml up --build`)*
+
+---
+
+## 🌐 Servicios disponibles
+
+- **Web (Next.js)** → [http://localhost:3000](http://localhost:3000)  
+- **API (.NET Core)** → [http://localhost:8080](http://localhost:8080)  
+- **MongoDB** → `mongodb://localhost:27017`
+
+---
+
+## ⚙️ Variables de entorno
+
+Las principales variables ya están definidas en `docker-compose.yml`:
+
+- `MONGODB_URI=mongodb://mongo:27017`
+- `MONGODB_DB=realestate`
+- `API_URL=http://api:8080`
+
+👉 Nota: si necesitas exponer `API_URL` en el cliente de Next.js, usa la variable `NEXT_PUBLIC_API_URL`.
+
+---
+
+## 🛑 Apagar los contenedores
+
+```bash
+npm run dev:down
+```
+
+*(Alias para `docker compose -f docker/compose/docker-compose.yml down`)*
+
+---
+
+## 📖 Notas útiles
+
+- La API se inicia con `SEED_ON_START=true`, lo que carga datos iniciales en la base de datos.
+- Puedes modificar los orígenes permitidos en la API con la variable `ALLOWED_ORIGINS`.
+- Next.js reescribe automáticamente las llamadas a `/api/*` hacia el servicio `api` en Docker.
+
+---
+
+## 🧹 Limpieza (opcional)
+
+Si quieres borrar volúmenes (ejemplo: datos de Mongo):
+
+```bash
+docker compose -f docker/compose/docker-compose.yml down -v
+```
