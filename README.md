@@ -30,7 +30,7 @@ Proyecto de ejemplo con **API (.NET Core)**, **Web (Next.js)** y **MongoDB**, to
 Clona el repo y entra en la carpeta:
 
 ```bash
-git clone https://github.com/TU-USUARIO/realestate-app.git
+git clone https://github.com/jsaldana-idrobo/realestate-app.git
 cd realestate-app
 ```
 
@@ -40,14 +40,14 @@ Levanta todo con un solo comando:
 npm run dev:up
 ```
 
-*(Este script ejecuta `docker compose -f docker/compose/docker-compose.yml up --build`)*
+_(Este script ejecuta `docker compose -f docker/compose/docker-compose.yml up --build`)_
 
 ---
 
 ## 🌐 Servicios disponibles
 
-- **Web (Next.js)** → [http://localhost:3000](http://localhost:3000)  
-- **API (.NET Core)** → [http://localhost:8080](http://localhost:8080)  
+- **Web (Next.js)** → [http://localhost:3000](http://localhost:3000)
+- **API (.NET Core)** → [http://localhost:8080](http://localhost:8080)
 - **MongoDB** → `mongodb://localhost:27017`
 
 ---
@@ -70,7 +70,7 @@ Las principales variables ya están definidas en `docker-compose.yml`:
 npm run dev:down
 ```
 
-*(Alias para `docker compose -f docker/compose/docker-compose.yml down`)*
+_(Alias para `docker compose -f docker/compose/docker-compose.yml down`)_
 
 ---
 
