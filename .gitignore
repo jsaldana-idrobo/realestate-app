@@ -1,0 +1,23 @@
+# Node
+node_modules/
+.npm/
+.pnpm-store/
+.next/
+dist/
+coverage/
+
+# .NET
+**/bin/
+**/obj/
+*.user
+*.suo
+
+# OS
+.DS_Store
+
+# Env
+.env
+.env.local
+
+# Others
+*.log
