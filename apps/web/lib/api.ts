@@ -10,47 +10,68 @@ type Params = {
   sortDir?: "asc" | "desc";
 };
 
-// En servidor usamos el backend absoluto; en cliente, ruta relativa (proxy de Next)
-const API_BASE =
-  typeof window === "undefined"
-    ? process.env.API_URL ?? "http://localhost:8080"
-    : "";
+const isServer = typeof window === "undefined";
 
-// Helper para construir URL sin templates anidados
+// En servidor vamos directo al servicio interno + prefijo /api/v1 (SSR no usa rewrites)
+// En cliente usamos el proxy de Next (/backend), que reescribe a /api/v1
+const API_BASE = isServer
+  ? (process.env.API_URL ?? "http://api:8080") + "/api/v1"
+  : "/backend";
+
+// CONSTRUCCIÓN DE URL SIN TEMPLATE LITERALS ANIDADOS
 export function buildURL(
   path: string,
   params?: Record<string, string | number | undefined>
 ) {
+  // normaliza los slashes
+  const base = API_BASE.endsWith("/") ? API_BASE.slice(0, -1) : API_BASE;
+  const p = path.startsWith("/") ? path : "/" + path;
+
   const qs = new URLSearchParams();
   if (params) {
-    for (const [k, v] of Object.entries(params)) {
+    for (const k in params) {
+      const v = params[k];
       if (v !== undefined && v !== null && String(v).length > 0) {
         qs.set(k, String(v));
       }
     }
   }
-  const q = qs.toString();
-  const url = API_BASE + path + (q ? "?" + q : "");
-  return url;
+  const query = qs.toString();
+  return base + p + (query ? "?" + query : "");
+}
+
+class HttpError extends Error {
+  status: number;
+  constructor(status: number, message?: string) {
+    super(message || "HTTP " + status);
+    this.name = "HttpError";
+    this.status = status;
+  }
+}
+
+// Rechaza SIEMPRE con Error (S6671)
+async function http<T>(
+  input: RequestInfo | URL,
+  init?: RequestInit
+): Promise<T> {
+  try {
+    const res = await fetch(input, { cache: "no-store", ...init });
+    if (!res.ok) throw new HttpError(res.status, "HTTP " + res.status);
+    return (await res.json()) as T;
+  } catch (err: unknown) {
+    // Normaliza AbortError también a Error
+    if (err instanceof DOMException && err.name === "AbortError") {
+      throw new Error("Request aborted");
+    }
+    if (err instanceof Error) throw err;
+    throw new Error("Unknown error: " + String(err));
+  }
 }
 
 export async function getProperties(params: Params) {
-  const res = await fetch(buildURL("/api/v1/properties", params), {
-    cache: "no-store",
-  });
-  if (!res.ok) throw new Error(`HTTP ${res.status}`);
-  const json = await res.json();
-  // Asegura que nunca devolvemos undefined
-  return json;
+  return http(buildURL("/properties", params));
 }
 
 export async function getProperty(id: string) {
-  const res = await fetch(
-    buildURL(`/api/v1/properties/${encodeURIComponent(id)}`),
-    { cache: "no-store" }
-  );
-  if (res.status === 404) return null;
-  if (!res.ok) throw new Error(`HTTP ${res.status}`);
-  const json = await res.json();
-  return json;
+  return http(buildURL("/properties/" + encodeURIComponent(id)));
 }
