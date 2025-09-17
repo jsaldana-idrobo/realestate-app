@@ -97,11 +97,14 @@ Desde la carpeta `apps/api`:
 dotnet test
 ```
 
+⚠️ Nota: Para ejecutar los tests del backend necesitas tener instalado el .NET 8 SDK en tu máquina.
+
 ### Frontend (Jest + React Testing Library)
 
 Desde la carpeta `apps/web`:
 
 ```bash
+npm install
 npm test
 ```
 
