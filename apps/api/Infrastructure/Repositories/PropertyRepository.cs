@@ -18,6 +18,7 @@ public interface IPropertyRepository
 public class PropertyRepository : IPropertyRepository
 {
     private readonly IMongoCollection<Property> _coll;
+    private static readonly Collation CaseInsensitiveCollation = new("en", strength: CollationStrength.Secondary);
 
     public PropertyRepository(MongoContext ctx)
     {
@@ -63,7 +64,10 @@ public class PropertyRepository : IPropertyRepository
             ? Builders<Property>.Filter.And(filters)
             : Builders<Property>.Filter.Empty;
 
-        var total = await _coll.CountDocumentsAsync(filter);
+        var total = await _coll.CountDocumentsAsync(filter, new CountOptions
+        {
+            Collation = CaseInsensitiveCollation,
+        });
 
         // ---- Sort estable (tie-breaker por Id) ----
         var sortBuilder = Builders<Property>.Sort;
@@ -97,12 +101,16 @@ public class PropertyRepository : IPropertyRepository
         var sort = sortBuilder.Combine(sortDefs);
 
         // ---- Query paginada ----
-        var items = await _coll
-            .Find(filter)
-            .Sort(sort)
-            .Skip((page - 1) * pageSize)
-            .Limit(pageSize)
-            .ToListAsync();
+        var findOptions = new FindOptions<Property>
+        {
+            Collation = CaseInsensitiveCollation,
+            Sort = sort,
+            Skip = (page - 1) * pageSize,
+            Limit = pageSize,
+        };
+
+        using var cursor = await _coll.FindAsync(filter, findOptions);
+        var items = await cursor.ToListAsync();
 
         return (items, total);
     }

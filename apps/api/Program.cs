@@ -52,10 +52,12 @@ app.MapControllers();
 // ----- Seed en arranque (opcional, controlado por env) -----
 using (var scope = app.Services.CreateScope())
 {
+    var ctx = scope.ServiceProvider.GetRequiredService<MongoContext>();
+    await ctx.EnsureIndexesAsync();
+
     var opts = scope.ServiceProvider.GetRequiredService<IOptions<MongoOptions>>().Value;
     if (opts.SeedOnStart)
     {
-        var ctx = scope.ServiceProvider.GetRequiredService<MongoContext>();
         var count = await ctx.Properties.EstimatedDocumentCountAsync();
         if (count == 0)
         {
