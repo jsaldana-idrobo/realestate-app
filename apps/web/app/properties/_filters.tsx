@@ -19,6 +19,13 @@ const MIN = 0;
 const MAX = 1_500_000;
 const STEP = 10_000;
 
+function parsePriceInput(raw: string, fallback: number) {
+  const normalized = raw.replace(/\D/g, "");
+  if (!normalized.length) return fallback;
+  const parsed = Number(normalized);
+  return Number.isFinite(parsed) ? parsed : fallback;
+}
+
 export default function FiltersBar() {
   const sp = useSearchParams();
   const router = useRouter();
@@ -242,7 +249,7 @@ export default function FiltersBar() {
               value={minPriceInput}
               onChange={(e) => setMinPriceInput(e.target.value)}
               onBlur={() => {
-                const v = Number(minPriceInput || MIN);
+                const v = parsePriceInput(minPriceInput, MIN);
                 const next: [number, number] = [
                   Math.max(MIN, Math.min(v, range[1])),
                   range[1],
@@ -261,7 +268,7 @@ export default function FiltersBar() {
               value={maxPriceInput}
               onChange={(e) => setMaxPriceInput(e.target.value)}
               onBlur={() => {
-                const v = Number(maxPriceInput || MAX);
+                const v = parsePriceInput(maxPriceInput, MAX);
                 const next: [number, number] = [
                   range[0],
                   Math.min(MAX, Math.max(v, range[0])),
