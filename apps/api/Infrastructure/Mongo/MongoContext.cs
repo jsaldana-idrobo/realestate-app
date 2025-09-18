@@ -1,7 +1,9 @@
 using Microsoft.Extensions.Options;
+using MongoDB.Bson;
 using MongoDB.Driver;
 using RealEstate.Api.Domain;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Threading;
 
 namespace RealEstate.Api.Infrastructure.Mongo;
@@ -12,6 +14,7 @@ public class MongoContext
     public IMongoCollection<Property> Properties { get; }
     private readonly SemaphoreSlim _indexLock = new(1, 1);
     private bool _indexesEnsured;
+    private bool _schemaEnsured;
 
     public MongoContext(IOptions<MongoOptions> options)
     {
@@ -61,6 +64,58 @@ public class MongoContext
 
             await Properties.Indexes.CreateManyAsync(models);
             _indexesEnsured = true;
+        }
+        finally
+        {
+            _indexLock.Release();
+        }
+    }
+
+    public async Task EnsureSchemaAsync()
+    {
+        if (_schemaEnsured) return;
+
+        await _indexLock.WaitAsync();
+        try
+        {
+            if (_schemaEnsured) return;
+
+            var raw = Db.GetCollection<BsonDocument>(Properties.CollectionNamespace.CollectionName);
+            var filter = Builders<BsonDocument>.Filter.Type("price", BsonType.String);
+            var docs = await raw
+                .Find(filter)
+                .Project(new BsonDocument
+                {
+                    { "_id", 1 },
+                    { "price", 1 }
+                })
+                .ToListAsync();
+
+            if (docs.Count > 0)
+            {
+                var writes = new List<WriteModel<BsonDocument>>(docs.Count);
+
+                foreach (var doc in docs)
+                {
+                    if (!doc.TryGetValue("price", out var priceValue) || priceValue.BsonType != BsonType.String)
+                        continue;
+
+                    if (!decimal.TryParse(priceValue.AsString, NumberStyles.Number, CultureInfo.InvariantCulture, out var parsed))
+                        continue;
+
+                    var update = Builders<BsonDocument>.Update.Set("price", BsonDecimal128.Create(parsed));
+                    writes.Add(new UpdateOneModel<BsonDocument>(
+                        Builders<BsonDocument>.Filter.Eq("_id", doc["_id"]),
+                        update));
+                }
+
+                if (writes.Count > 0)
+                {
+                    await raw.BulkWriteAsync(writes);
+                }
+            }
+
+            _schemaEnsured = true;
         }
         finally
         {

@@ -54,6 +54,7 @@ using (var scope = app.Services.CreateScope())
 {
     var ctx = scope.ServiceProvider.GetRequiredService<MongoContext>();
     await ctx.EnsureIndexesAsync();
+    await ctx.EnsureSchemaAsync();
 
     var opts = scope.ServiceProvider.GetRequiredService<IOptions<MongoOptions>>().Value;
     if (opts.SeedOnStart)

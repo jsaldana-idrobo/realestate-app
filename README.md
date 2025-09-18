@@ -42,6 +42,22 @@ npm run dev:up
 
 _(Este script ejecuta `docker compose -f docker/compose/docker-compose.yml up --build`)_
 
+### Endpoints & ejemplos
+
+- **Listar propiedades**
+
+  ```bash
+  curl "http://localhost:8080/api/v1/properties?page=1&pageSize=12&minPrice=100000"
+  ```
+
+- **Detalle de propiedad**
+
+  ```bash
+  curl "http://localhost:8080/api/v1/properties/68cc5c3a1b42fd4e5878eaf8"
+  ```
+
+> En modo Docker, la API expone los datos bajo `http://localhost:8080/api/v1`. El frontend consume la misma API desde `/backend/*` gracias al proxy de Next.js.
+
 ---
 
 ## 🌐 Servicios disponibles
@@ -71,7 +87,7 @@ Las principales variables ya están definidas en `docker-compose.yml`:
   - API REST con endpoints para listar propiedades.
   - Filtros: nombre, dirección y rango de precios.
   - DTO con: `IdOwner`, `Name`, `AddressProperty`, `PriceProperty`, `Image`.
-  - Conexión con MongoDB y seeding inicial.
+  - Conexión con MongoDB, seeding inicial y migración automática que normaliza `price` a `Decimal128`.
   - Índices creados automáticamente en arranque (`price`, `createdAt+_id`, `name`, `address`) para acelerar filtros y ordenamientos.
   - Tests unitarios en NUnit ejercitando el repositorio contra una instancia temporal de Mongo (Mongo2Go).
 
@@ -127,6 +143,17 @@ npm run e2e
   - Índices en MongoDB para búsquedas rápidas.
   - Hooks y componentes optimizados en frontend.
 - **Código limpio**: tipado estricto (C#, TypeScript), nombres claros, sin lógica duplicada.
+
+### Datos y migraciones
+
+- El contenedor de Mongo guarda los datos en el volumen `mongo_data`.
+- Si vienes de una versión donde `price` se guardaba como string, la API normaliza esos registros a `Decimal128` durante el arranque (`EnsureSchemaAsync`).
+- Para un reseteo total (vaciar datos y volver a sembrar):
+
+  ```bash
+  docker compose -f docker/compose/docker-compose.yml down -v
+  npm run dev:up
+  ```
 
 ---
 

@@ -19,6 +19,7 @@ public class Property
     public string Address { get; set; } = string.Empty;
 
     [BsonElement("price")]
+    [BsonRepresentation(BsonType.Decimal128)]
     public decimal Price { get; set; }
 
     [BsonElement("imageUrl")]

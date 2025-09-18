@@ -1,4 +1,6 @@
 // apps/web/lib/api.ts
+import type { PageResult, PropertyDto } from "@/types";
+
 type Params = {
   name?: string;
   address?: string;
@@ -69,9 +71,9 @@ async function http<T>(
 }
 
 export async function getProperties(params: Params) {
-  return http(buildURL("/properties", params));
+  return http<PageResult<PropertyDto>>(buildURL("/properties", params));
 }
 
 export async function getProperty(id: string) {
-  return http(buildURL("/properties/" + encodeURIComponent(id)));
+  return http<PropertyDto>(buildURL("/properties/" + encodeURIComponent(id)));
 }
