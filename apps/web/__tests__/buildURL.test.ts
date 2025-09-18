@@ -1,25 +1,43 @@
-import { buildURL } from "@/lib/api";
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, afterEach, vi } from "vitest";
+
+const expectedBase = () =>
+  typeof window === "undefined"
+    ? (process.env.API_URL ?? "http://api:8080") + "/api/v1"
+    : "/backend";
 
 describe("buildURL", () => {
-  it("sin params -> path", () => {
-    expect(buildURL("/api/v1/properties")).toBe("/api/v1/properties");
+  afterEach(() => {
+    vi.unstubAllGlobals();
+    vi.resetModules();
   });
 
-  it("con params -> query", () => {
-    const url = buildURL("/api/v1/properties", {
+  it("sin params -> path", async () => {
+    const { buildURL } = await import("@/lib/api");
+    expect(buildURL("/properties")).toBe(`${expectedBase()}/properties`);
+  });
+
+  it("con params -> query", async () => {
+    const { buildURL } = await import("@/lib/api");
+    const url = buildURL("/properties", {
       page: 1,
       pageSize: 12,
       sortBy: "createdAt",
       sortDir: "desc",
     });
     expect(url).toBe(
-      "/api/v1/properties?page=1&pageSize=12&sortBy=createdAt&sortDir=desc"
+      `${expectedBase()}/properties?page=1&pageSize=12&sortBy=createdAt&sortDir=desc`
     );
   });
 
-  it("omite undefined/vacíos", () => {
+  it("omite undefined/vacíos", async () => {
+    const { buildURL } = await import("@/lib/api");
     const url = buildURL("/x", { a: "", b: undefined, c: 0, d: "ok" });
-    expect(url).toBe("/x?c=0&d=ok");
+    expect(url).toBe(`${expectedBase()}/x?c=0&d=ok`);
+  });
+
+  it("soporta modo servidor cuando window no existe", async () => {
+    vi.stubGlobal("window", undefined);
+    const { buildURL } = await import("@/lib/api");
+    expect(buildURL("/p")).toBe(`${expectedBase()}/p`);
   });
 });

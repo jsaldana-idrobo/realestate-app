@@ -34,7 +34,7 @@ git clone https://github.com/jsaldana-idrobo/realestate-app.git
 cd realestate-app
 ```
 
-Levanta todo con un solo comando:
+Levanta todo con un solo comando (ejecuta pruebas antes de levantar Docker):
 
 ```bash
 npm run dev:up
@@ -72,6 +72,8 @@ Las principales variables ya están definidas en `docker-compose.yml`:
   - Filtros: nombre, dirección y rango de precios.
   - DTO con: `IdOwner`, `Name`, `AddressProperty`, `PriceProperty`, `Image`.
   - Conexión con MongoDB y seeding inicial.
+  - Índices creados automáticamente en arranque (`price`, `createdAt+_id`, `name`, `address`) para acelerar filtros y ordenamientos.
+  - Tests unitarios en NUnit ejercitando el repositorio contra una instancia temporal de Mongo (Mongo2Go).
 
 - **Frontend (Next.js)**
 
@@ -79,6 +81,7 @@ Las principales variables ya están definidas en `docker-compose.yml`:
   - Filtros dinámicos (nombre, dirección, rango de precios).
   - Vista de detalle de propiedad.
   - Responsive design.
+  - Inputs de precio tolerantes a `.` o `,` (se normalizan antes de aplicar filtros).
 
 - **Infraestructura**
   - Proyecto orquestado con Docker Compose (API, Web, Mongo).
@@ -91,28 +94,28 @@ Las principales variables ya están definidas en `docker-compose.yml`:
 
 ### Backend (NUnit)
 
-Desde la carpeta `apps/api`:
-
 ```bash
-dotnet test
+cd apps/api
+dotnet test ./tests/Api.Tests/Api.Tests.csproj
 ```
 
-⚠️ Nota: Para ejecutar los tests del backend necesitas tener instalado el .NET 8 SDK en tu máquina.
+> Los tests usan [Mongo2Go](https://github.com/Mongo2Go/Mongo2Go) para levantar un MongoDB efímero y verificar filtros, ordenamientos y paginación del repositorio. Se requiere tener el SDK de .NET 8 instalado y acceso a nuget.org para restaurar paquetes.
 
-### Frontend (Jest + React Testing Library)
-
-Desde la carpeta `apps/web`:
+### Frontend (Vitest + Testing Library)
 
 ```bash
+cd apps/web
 npm install
-npm test
+npm test -- --run
 ```
 
-Si quieres correr los test 2e2:
+Para correr E2E con Playwright:
 
 ```bash
 npm run e2e
 ```
+
+> `npm run dev:up` ejecuta `npm run test:all` como paso previo, así que asegúrate de tener dependencias instaladas (`npm install` en `apps/web`) y acceso a NuGet antes de levantar los contenedores.
 
 ---
 

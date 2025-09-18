@@ -2,6 +2,10 @@
   "name": "realestate-monorepo",
   "private": true,
   "scripts": {
+    "test:web": "npm --prefix apps/web test -- --run",
+    "test:api": "dotnet test apps/api/tests/Api.Tests/Api.Tests.csproj",
+    "test:all": "npm run test:web && npm run test:api",
+    "predev:up": "npm run test:all",
     "dev:up": "docker compose -f docker/compose/docker-compose.yml up --build",
     "dev:down": "docker compose -f docker/compose/docker-compose.yml down -v"
   }
